@@ -1,22 +1,35 @@
-import { Controller, Delete, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Post, Put, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { User } from 'src/shared/decorator/user.decorator';
 import { GameService } from './game.service';
+import { SpinGame } from './models/game.dto';
 
 @Controller('game')
 export class GameController {
-  constructor(private gameService: GameService) {}
+  constructor(private readonly gameService: GameService) {}
 
   @Post('create')
-  newGame() {
-    return this.gameService.createNewGame();
+  @UseGuards(JwtAuthGuard)
+  newGame(@User() user) {
+    const userId = user.id;
+    const userBalance = user.balance;
+
+    return this.gameService.createNewGame(userId, userBalance);
   }
 
   @Put('/spin')
-  updateGame() {
-    return this.gameService.updateGame();
+  @UseGuards(JwtAuthGuard)
+  updateGame(@User() user, @Body() body: SpinGame) {
+    const userId = user.id;
+
+    return this.gameService.spinGame(userId, body);
   }
 
   @Delete('/end')
-  endGame() {
-    return this.gameService.endGame();
+  @UseGuards(JwtAuthGuard)
+  endGame(@User() user) {
+    const userId = user.id;
+
+    return this.gameService.endGame(userId);
   }
 }

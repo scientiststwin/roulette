@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RedisModule } from 'nestjs-redis';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { GameModule } from './game/game.module';
@@ -17,6 +18,12 @@ import validationSchema from './config/configs.schema';
       isGlobal: true,
       validationSchema: validationSchema,
       load: [redisConfig, jwtConfig],
+    }),
+
+    RedisModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => config.get('redis'),
+      inject: [ConfigService],
     }),
   ],
   controllers: [AppController],
